@@ -15,7 +15,7 @@ import {
 	FORM_NODE_TYPE,
 	FORM_TRIGGER_NODE_TYPE,
 	tryToParseJsonToFormFields,
-	NodeConnectionType,
+	NodeConnectionTypes,
 } from 'n8n-workflow';
 
 import { cssVariables } from './cssVariables';
@@ -74,7 +74,7 @@ export const formFieldsProperties: INodeProperties[] = [
 			'[\n   {\n      "fieldLabel":"Name",\n      "placeholder":"enter you name",\n      "requiredField":true\n   },\n   {\n      "fieldLabel":"Age",\n      "fieldType":"number",\n      "placeholder":"enter your age"\n   },\n   {\n      "fieldLabel":"Email",\n      "fieldType":"email",\n      "requiredField":true\n   }\n]',
 		validateType: 'form-fields',
 		ignoreValidationDuringExecution: true,
-		hint: '<a href="hhttps://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.form/" target="_blank">See docs</a> for field syntax',
+		hint: '<a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.form/" target="_blank">See docs</a> for field syntax',
 		displayOptions: {
 			show: {
 				defineForm: ['json'],
@@ -273,8 +273,8 @@ export class Form extends Node {
 		defaults: {
 			name: 'Form',
 		},
-		inputs: [NodeConnectionType.Main],
-		outputs: [NodeConnectionType.Main],
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		webhooks: [
 			{
 				name: 'default',
@@ -283,7 +283,7 @@ export class Form extends Node {
 				path: '',
 				restartWebhook: true,
 				isFullPath: true,
-				isForm: true,
+				nodeType: 'form',
 			},
 			{
 				name: 'default',
@@ -292,7 +292,7 @@ export class Form extends Node {
 				path: '',
 				restartWebhook: true,
 				isFullPath: true,
-				isForm: true,
+				nodeType: 'form',
 			},
 		],
 		properties: [

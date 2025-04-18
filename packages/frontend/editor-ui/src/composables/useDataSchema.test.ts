@@ -4,7 +4,7 @@ import type { IExecutionResponse, INodeUi, Schema } from '@/Interface';
 import { setActivePinia } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
 import {
-	NodeConnectionType,
+	NodeConnectionTypes,
 	type INodeExecutionData,
 	type ITaskDataConnections,
 } from 'n8n-workflow';
@@ -553,14 +553,16 @@ describe('useDataSchema', () => {
 			data: {
 				resultData: {
 					runData: {
-						[runDataKey ?? name]: [{ data, startTime: 0, executionTime: 0, source: [] }],
+						[runDataKey ?? name]: [
+							{ data, startTime: 0, executionTime: 0, executionIndex: 0, source: [] },
+						],
 					},
 				},
 			},
 		});
 
 		const mockExecutionDataMarker = Symbol() as unknown as INodeExecutionData[];
-		const Main = NodeConnectionType.Main;
+		const Main = NodeConnectionTypes.Main;
 
 		test.each<
 			[
@@ -619,17 +621,20 @@ describe('useDataSchema', () => {
 										{
 											startTime: 0,
 											executionTime: 0,
+											executionIndex: 0,
 											source: [],
 										},
 										{
 											startTime: 0,
 											executionTime: 0,
+											executionIndex: 1,
 											source: [],
 										},
 										{
 											data: { [Main]: [null, mockExecutionDataMarker] },
 											startTime: 0,
 											executionTime: 0,
+											executionIndex: 2,
 											source: [],
 										},
 									],

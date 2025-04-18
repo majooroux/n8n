@@ -63,13 +63,13 @@ import {
 	STICKY_NODE_TYPE,
 	VALID_WORKFLOW_IMPORT_URL_REGEX,
 	VIEWS,
-	AI_CREDITS_EXPERIMENT,
+	WORKFLOW_SETTINGS_MODAL_KEY,
 } from '@/constants';
 import { useSourceControlStore } from '@/stores/sourceControl.store';
 import { useNodeCreatorStore } from '@/stores/nodeCreator.store';
 import { useExternalHooks } from '@/composables/useExternalHooks';
-import { NodeConnectionType, jsonParse } from 'n8n-workflow';
-import type { IDataObject, ExecutionSummary, IConnection } from 'n8n-workflow';
+import { NodeConnectionTypes, jsonParse } from 'n8n-workflow';
+import type { NodeConnectionType, IDataObject, ExecutionSummary, IConnection } from 'n8n-workflow';
 import { useToast } from '@/composables/useToast';
 import { useSettingsStore } from '@/stores/settings.store';
 import { useCredentialsStore } from '@/stores/credentials.store';
@@ -87,7 +87,6 @@ import { useWorkflowHelpers } from '@/composables/useWorkflowHelpers';
 import { useTelemetry } from '@/composables/useTelemetry';
 import { useHistoryStore } from '@/stores/history.store';
 import { useProjectsStore } from '@/stores/projects.store';
-import { usePostHog } from '@/stores/posthog.store';
 import { useNodeHelpers } from '@/composables/useNodeHelpers';
 import { useExecutionDebugging } from '@/composables/useExecutionDebugging';
 import { useUsersStore } from '@/stores/users.store';
@@ -114,6 +113,7 @@ import { isValidNodeConnectionType } from '@/utils/typeGuards';
 import { getEasyAiWorkflowJson } from '@/utils/easyAiWorkflowUtils';
 import type { CanvasLayoutEvent } from '@/composables/useCanvasLayout';
 import { useClearExecutionButtonVisible } from '@/composables/useClearExecutionButtonVisible';
+import { LOGS_PANEL_STATE } from '@/components/CanvasChat/types/logs';
 
 defineOptions({
 	name: 'NodeView',
@@ -164,7 +164,6 @@ const tagsStore = useTagsStore();
 const pushConnectionStore = usePushConnectionStore();
 const ndvStore = useNDVStore();
 const templatesStore = useTemplatesStore();
-const posthogStore = usePostHog();
 
 const canvasEventBus = createEventBus<CanvasEventBusEvents>();
 
@@ -273,7 +272,7 @@ const keyBindingsEnabled = computed(() => {
 	return !ndvStore.activeNode && uiStore.activeModals.length === 0;
 });
 
-const isChatOpen = computed(() => workflowsStore.chatPanelState !== 'closed');
+const isLogsPanelOpen = computed(() => workflowsStore.logsPanelState !== LOGS_PANEL_STATE.CLOSED);
 
 /**
  * Initialization
@@ -345,13 +344,7 @@ async function initializeRoute(force = false) {
 		const loadWorkflowFromJSON = route.query.fromJson === 'true';
 
 		if (loadWorkflowFromJSON) {
-			const isAiCreditsExperimentEnabled =
-				posthogStore.getVariant(AI_CREDITS_EXPERIMENT.name) === AI_CREDITS_EXPERIMENT.variant;
-
-			const easyAiWorkflowJson = getEasyAiWorkflowJson({
-				isInstanceInAiFreeCreditsExperiment: isAiCreditsExperimentEnabled,
-				withOpenAiFreeCredits: settingsStore.aiCreditsQuota,
-			});
+			const easyAiWorkflowJson = getEasyAiWorkflowJson();
 			await openTemplateFromWorkflowJSON(easyAiWorkflowJson);
 		} else {
 			await openWorkflowTemplate(templateId.toString());
@@ -990,19 +983,19 @@ async function onAddNodesAndConnections(
 	const mappedConnections: CanvasConnectionCreateData[] = connections.map(({ from, to }) => {
 		const fromNode = editableWorkflow.value.nodes[offsetIndex + from.nodeIndex];
 		const toNode = editableWorkflow.value.nodes[offsetIndex + to.nodeIndex];
-		const type = from.type ?? to.type ?? NodeConnectionType.Main;
+		const type = from.type ?? to.type ?? NodeConnectionTypes.Main;
 
 		return {
 			source: fromNode.id,
 			sourceHandle: createCanvasConnectionHandleString({
 				mode: CanvasConnectionMode.Output,
-				type: isValidNodeConnectionType(type) ? type : NodeConnectionType.Main,
+				type: isValidNodeConnectionType(type) ? type : NodeConnectionTypes.Main,
 				index: from.outputIndex ?? 0,
 			}),
 			target: toNode.id,
 			targetHandle: createCanvasConnectionHandleString({
 				mode: CanvasConnectionMode.Input,
-				type: isValidNodeConnectionType(type) ? type : NodeConnectionType.Main,
+				type: isValidNodeConnectionType(type) ? type : NodeConnectionTypes.Main,
 				index: to.inputIndex ?? 0,
 			}),
 			data: {
@@ -1286,8 +1279,8 @@ const chatTriggerNodePinnedData = computed(() => {
 	return workflowsStore.pinDataByNodeName(chatTriggerNode.value.name);
 });
 
-async function onOpenChat() {
-	await toggleChatOpen('main');
+async function onOpenChat(isOpen?: boolean) {
+	await toggleChatOpen('main', isOpen);
 }
 
 /**
@@ -1680,6 +1673,11 @@ onMounted(() => {
 				// Once view is initialized, pick up all toast notifications
 				// waiting in the store and display them
 				toast.showNotificationForViews([VIEWS.WORKFLOW, VIEWS.NEW_WORKFLOW]);
+
+				if (route.query.settings) {
+					uiStore.openModal(WORKFLOW_SETTINGS_MODAL_KEY);
+					void router.replace({ query: { settings: undefined } });
+				}
 			})
 			.finally(() => {
 				isLoading.value = false;
@@ -1787,9 +1785,9 @@ onBeforeUnmount(() => {
 			/>
 			<CanvasChatButton
 				v-if="containsChatTriggerNodes"
-				:type="isChatOpen ? 'tertiary' : 'primary'"
-				:label="isChatOpen ? i18n.baseText('chat.hide') : i18n.baseText('chat.open')"
-				@click="onOpenChat"
+				:type="isLogsPanelOpen ? 'tertiary' : 'primary'"
+				:label="isLogsPanelOpen ? i18n.baseText('chat.hide') : i18n.baseText('chat.open')"
+				@click="onOpenChat(!isLogsPanelOpen)"
 			/>
 			<CanvasStopCurrentExecutionButton
 				v-if="isStopExecutionButtonVisible"

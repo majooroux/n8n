@@ -3,13 +3,7 @@
     "properties": {
         "id": {
             "type": "integer"
-        },
-        "won_status": {
-            "type": "string"
         }
     },
-    "required": [
-        "id"
-    ],
-    "version": 1
+    "version": 2
 }

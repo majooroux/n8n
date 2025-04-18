@@ -157,6 +157,8 @@ export interface INodeUpdatePropertiesInformation {
 
 export type XYPosition = [number, number];
 
+export type DraggableMode = 'mapping' | 'panel-resize' | 'move';
+
 export interface INodeUi extends INode {
 	position: XYPosition;
 	color?: string;
@@ -326,6 +328,7 @@ export interface IWorkflowDb {
 	versionId: string;
 	usedCredentials?: IUsedCredential[];
 	meta?: WorkflowMetadata;
+	parentFolder?: { id: string; name: string };
 }
 
 // For workflow list we don't need the full workflow data
@@ -339,13 +342,13 @@ export type WorkflowListItem = Omit<
 	'nodes' | 'connections' | 'settings' | 'pinData' | 'usedCredentials' | 'meta'
 > & {
 	resource: 'workflow';
-	parentFolder?: { id: string; name: string };
 };
 
 export type FolderShortInfo = {
 	id: string;
 	name: string;
 	parentFolder?: string;
+	parentFolderId?: string | null;
 };
 
 export type BaseFolderItem = BaseResource & {
@@ -361,6 +364,10 @@ export type BaseFolderItem = BaseResource & {
 
 export interface FolderListItem extends BaseFolderItem {
 	resource: 'folder';
+}
+
+export interface ChangeLocationSearchResult extends BaseFolderItem {
+	resource: 'folder' | 'project';
 }
 
 export type FolderPathItem = PathItem & { parentFolder?: string };
@@ -441,9 +448,9 @@ export interface IExecutionBase {
 	status: ExecutionStatus;
 	retryOf?: string;
 	retrySuccessId?: string;
-	startedAt: Date;
-	createdAt: Date;
-	stoppedAt?: Date;
+	startedAt: Date | string;
+	createdAt: Date | string;
+	stoppedAt?: Date | string;
 	workflowId?: string; // To be able to filter executions easily //
 }
 
@@ -950,6 +957,8 @@ export interface RootState {
 	endpointForm: string;
 	endpointFormTest: string;
 	endpointFormWaiting: string;
+	endpointMcp: string;
+	endpointMcpTest: string;
 	endpointWebhook: string;
 	endpointWebhookTest: string;
 	endpointWebhookWaiting: string;
@@ -1462,7 +1471,8 @@ export type CloudUpdateLinkSourceType =
 	| 'worker-view'
 	| 'external-secrets'
 	| 'rbac'
-	| 'debug';
+	| 'debug'
+	| 'insights';
 
 export type UTMCampaign =
 	| 'upgrade-custom-data-filter'
@@ -1485,7 +1495,8 @@ export type UTMCampaign =
 	| 'upgrade-worker-view'
 	| 'upgrade-external-secrets'
 	| 'upgrade-rbac'
-	| 'upgrade-debug';
+	| 'upgrade-debug'
+	| 'upgrade-insights';
 
 export type N8nBanners = {
 	[key in BannerName]: {
@@ -1533,7 +1544,8 @@ export type EnterpriseEditionFeatureKey =
 	| 'DebugInEditor'
 	| 'WorkflowHistory'
 	| 'WorkerView'
-	| 'AdvancedPermissions';
+	| 'AdvancedPermissions'
+	| 'ApiKeyScopes';
 
 export type EnterpriseEditionFeatureValue = keyof Omit<FrontendSettings['enterprise'], 'projects'>;
 
@@ -1579,3 +1591,10 @@ export type MainPanelDimensions = Record<
 		relativeWidth: number;
 	}
 >;
+
+export interface LlmTokenUsageData {
+	completionTokens: number;
+	promptTokens: number;
+	totalTokens: number;
+	isEstimate: boolean;
+}

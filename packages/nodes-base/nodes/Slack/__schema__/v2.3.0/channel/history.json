@@ -1,32 +1,11 @@
 {
     "type": "object",
     "properties": {
-        "user": {
-            "type": "string"
-        },
-        "type": {
-            "type": "string"
-        },
-        "ts": {
-            "type": "string"
-        },
-        "client_msg_id": {
-            "type": "string"
-        },
-        "text": {
-            "type": "string"
-        },
-        "team": {
-            "type": "string"
-        },
         "blocks": {
             "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
-                    "type": {
-                        "type": "string"
-                    },
                     "block_id": {
                         "type": "string"
                     },
@@ -35,58 +14,53 @@
                         "items": {
                             "type": "object",
                             "properties": {
-                                "type": {
-                                    "type": "string"
-                                },
                                 "elements": {
                                     "type": "array",
                                     "items": {
                                         "type": "object",
                                         "properties": {
-                                            "type": {
-                                                "type": "string"
-                                            },
                                             "text": {
                                                 "type": "string"
                                             },
-                                            "url": {
+                                            "type": {
                                                 "type": "string"
-                                            },
-                                            "style": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "bold": {
-                                                        "type": "boolean"
-                                                    }
-                                                }
                                             }
-                                        },
-                                        "required": [
-                                            "type"
-                                        ]
+                                        }
                                     }
+                                },
+                                "type": {
+                                    "type": "string"
                                 }
-                            },
-                            "required": [
-                                "type"
-                            ]
+                            }
                         }
+                    },
+                    "type": {
+                        "type": "string"
                     }
-                },
-                "required": [
-                    "type",
-                    "block_id"
-                ]
+                }
             }
+        },
+        "client_msg_id": {
+            "type": "string"
         },
         "subtype": {
             "type": "string"
+        },
+        "team": {
+            "type": "string"
+        },
+        "text": {
+            "type": "string"
+        },
+        "ts": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "user": {
+            "type": "string"
         }
     },
-    "required": [
-        "type",
-        "ts",
-        "text"
-    ],
-    "version": 1
+    "version": 2
 }
